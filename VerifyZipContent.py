@@ -2,14 +2,6 @@
 import os, zipfile
 import glob
 
-zipPath = r"/Users/gianluca/Desktop/Change scrolling trackpad windows 10.PNG.zip"
-baseFolderPath = "/Users/gianluca/Desktop/test/"
-nationalNumber1 = None
-nationalNumber2 = None
-
-
-# def buildPaths():
-
 def getFolderNames(basePath):
     pathList = glob.glob(basePath + "*")
     nationalNumberList = []
@@ -19,11 +11,14 @@ def getFolderNames(basePath):
 
     return nationalNumberList
 
-def unzip(zipPath, extractPath):
+def unzip(basePath, nationalNumber):
+    zipPath = basePath + nationalNumber + "/" + nationalNumber + "_Appendix.zip"
+    extractPath = basePath + nationalNumber + "/"
+
     with zipfile.ZipFile(zipPath, 'r') as zip_ref:
         zip_ref.extractall(extractPath)
 
-    print(zipPath + " ---> UNZIPPED \n")
+    print("   " + zipPath + " ---> UNZIPPED")
 
     if os.path.exists(extractPath + "__MACOSX"):
         os.rmdir(extractPath + "__MACOSX")
@@ -32,35 +27,44 @@ def getFileNames(path):
     return glob.glob(path + "*")
 
 
-def compareFileName(nationalNumber1, nationalNumber2, fileNameList, basePath):
-    print("National number 1: " + nationalNumber1 + " - National number 2: " + nationalNumber2)
+def compareFileName(nationalNumber, fileNameList, clientPath):
+    valid = False
 
     for file in fileNameList:
-        if nationalNumber1 not in file:
-            if nationalNumber2 not in file:
-                if ".zip" not in file:
-                    print(file.replace(basePath, "") + ": " + " not ok")
-            else:
-                print(file.replace(basePath, "") + ": " + " ok")
-        else:
-            print(file.replace(basePath, "") + ": " + " ok")
+        if ".zip" not in file:
+            file = file.replace(clientPath, "")
 
-    print("-----------")
+            if nationalNumber in file:
+                valid = True
+                print("   VERIFIED - VALID")
+                break
 
-def removeUnzippedFiles(path):
-    filesToRemove = getFileNames(path + "*")
+    if not valid:
+        print("   VERIFIED - ERROR")
+
+
+def removeUnzippedFiles(path, nationalNumber):
+    filesToRemove = getFileNames(path + nationalNumber + "/")
 
     for file in filesToRemove:
         if ".pdf" in file:
             os.remove(file)
 
-    print(path + " ---> CLEANED \n")
+    print("   " + path + nationalNumber + "/" + " ---> CLEANED")
 
-print("          ")
-print("          ")
-print("          ")
-getFolderNames("/Users/gianluca/Desktop/test/")
-unzip("/Users/gianluca/Desktop/test/11111/test.zip", "/Users/gianluca/Desktop/test/11111/")
-fileNames = getFileNames("/Users/gianluca/Desktop/test/11111/")
-compareFileName("22222", "33333", fileNames, "/Users/gianluca/Desktop/test/")
-removeUnzippedFiles("/Users/gianluca/Desktop/test/11111/")
+
+
+basePath = "/Users/gianluca/Desktop/test/"
+
+folders = getFolderNames(basePath)
+
+for client in folders:
+    nationalNumber = client
+    clientPath = basePath + nationalNumber + "/"
+
+    print("#" + nationalNumber)
+    unzip(basePath, nationalNumber)
+    fileNames = getFileNames(clientPath)
+    compareFileName(nationalNumber, fileNames, clientPath)
+    removeUnzippedFiles(basePath, nationalNumber)
+    print("-------------------------------")
