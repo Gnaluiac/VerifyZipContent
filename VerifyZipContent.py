@@ -1,15 +1,21 @@
 #!/usr/bin/python
-import os, zipfile
 import glob
+import os
+import sys
+import zipfile
+
+# Global Variables
+OS = sys.platform
+basePath = "<path you want to check>"
+
 
 def getFolderNames(basePath):
-    pathList = glob.glob(basePath + "*")
-    nationalNumberList = []
 
-    for x in pathList:
-        nationalNumberList.append(x.replace(basePath, ""))
+    nationalNumberList = []
+    nationalNumberList = os.listdir(basePath)
 
     return nationalNumberList
+
 
 def unzip(basePath, nationalNumber):
     zipPath = basePath + nationalNumber + "/" + nationalNumber + "_Appendix.zip"
@@ -23,8 +29,10 @@ def unzip(basePath, nationalNumber):
     if os.path.exists(extractPath + "__MACOSX"):
         os.rmdir(extractPath + "__MACOSX")
 
+
 def getFileNames(path):
-    return glob.glob(path + "*")
+
+    return os.listdir(path)
 
 
 def compareFileName(nationalNumber, fileNameList, clientPath):
@@ -32,12 +40,13 @@ def compareFileName(nationalNumber, fileNameList, clientPath):
 
     for file in fileNameList:
         if ".zip" not in file:
-            file = file.replace(clientPath, "")
 
-            if nationalNumber in file:
-                valid = True
-                print("   VERIFIED - VALID")
-                break
+            if ".xlsx" not in file:
+
+                if nationalNumber in file:
+                    valid = True
+                    print("   VERIFIED - VALID")
+                    break
 
     if not valid:
         print("   VERIFIED - ERROR")
@@ -48,13 +57,9 @@ def removeUnzippedFiles(path, nationalNumber):
 
     for file in filesToRemove:
         if ".pdf" in file:
-            os.remove(file)
+            os.remove(path + nationalNumber + "/" + file)
 
     print("   " + path + nationalNumber + "/" + " ---> CLEANED")
-
-
-
-basePath = "/Users/gianluca/Desktop/test/"
 
 folders = getFolderNames(basePath)
 
@@ -64,7 +69,7 @@ for client in folders:
 
     print("#" + nationalNumber)
     unzip(basePath, nationalNumber)
-    fileNames = getFileNames(clientPath)
+    fileNames = getFileNames(clientPath)  # check glob here for \\ instead of //
     compareFileName(nationalNumber, fileNames, clientPath)
     removeUnzippedFiles(basePath, nationalNumber)
     print("-------------------------------")
